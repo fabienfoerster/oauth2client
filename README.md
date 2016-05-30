@@ -5,9 +5,8 @@
 
 ```go
   conf := &oauth2.Config{
-    ClientID:     "b695d5cdcb49",
-    ClientSecret: "dfadc5cf323bbc5c588bba176960d5f6",
-    RedirectURL:  "http:localhost:8080",
+    ClientID:     "xxx",
+    ClientSecret: "xxx",
     Endpoint:     Endpoint,
   }
 
