@@ -25,7 +25,7 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 	client := &Oauth2Client{
 		codeChan: make(chan string),
 		Conf:     conf,
-		addr:     "localhost:3000",
+		addr:     "http://localhost:3000",
 	}
 	client.Conf.RedirectURL = client.addr
 	return client
