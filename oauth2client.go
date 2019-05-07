@@ -13,12 +13,17 @@ type Oauth2Client struct {
 	codeChan chan string // channel use to retrieve the code from the dummy server
 	Conf     *oauth2.Config
 	addr     string
+	server   http.Server
 }
 
 func (o *Oauth2Client) handleCode(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	o.codeChan <- code
 	w.Write([]byte(code))
+}
+
+func (o *Oauth2Client) Shutdown() {
+	o.server.Shutdown(context.Background())
 }
 
 func NewClient(conf *oauth2.Config) *Oauth2Client {
@@ -28,19 +33,21 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 		addr:     "http://localhost:3000",
 	}
 	client.Conf.RedirectURL = client.addr
+
+	client.server = http.Server{}
+	client.server.Addr = client.addr
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", client.handleCode)
+	client.server.Handler = mux
+
 	return client
 }
 
 func (o *Oauth2Client) RetrieveCode() string {
-	httpServer := http.Server{}
-	httpServer.Addr = o.addr
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", o.handleCode)
-	httpServer.Handler = mux
-	go httpServer.ListenAndServe()
+
+	go o.server.ListenAndServe()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	browser.OpenURL(url)
 	code := <-o.codeChan
-	httpServer.Shutdown(context.Background())
 	return code
 }
