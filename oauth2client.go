@@ -19,7 +19,7 @@ type Oauth2Client struct {
 func (o *Oauth2Client) handleCode(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	o.codeChan <- code
-	w.Write([]byte(code))
+	w.Write([]byte("Oauth successful. You can close this tab"))
 }
 
 func NewClient(conf *oauth2.Config) *Oauth2Client {
