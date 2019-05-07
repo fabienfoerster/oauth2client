@@ -27,7 +27,7 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 		Conf:     conf,
 		addr:     "0.0.0.0:3000",
 	}
-	client.Conf.RedirectURL = addr
+	client.Conf.RedirectURL = client.addr
 	return client
 }
 
@@ -35,7 +35,7 @@ func (o *Oauth2Client) RetrieveCode() string {
 	httpServer := http.Server{}
 	httpServer.Addr = o.addr
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", o/handleCode)
+	mux.HandleFunc("/", o.handleCode)
 	httpServer.Handler = mux
 	go httpServer.ListenAndServe()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
