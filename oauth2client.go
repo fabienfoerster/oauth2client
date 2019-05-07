@@ -2,7 +2,6 @@ package oauth2client
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/pkg/browser"
@@ -21,10 +20,6 @@ func (o *Oauth2Client) handleCode(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	o.codeChan <- code
 	w.Write([]byte(code))
-}
-
-func (o *Oauth2Client) Shutdown() {
-	o.server.Shutdown(context.Background())
 }
 
 func NewClient(conf *oauth2.Config) *Oauth2Client {
@@ -47,14 +42,14 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 func (o *Oauth2Client) RetrieveCode() string {
 
 	go func() {
-		err := o.server.ListenAndServe()
-		if err != nil {
-			log.Printf("Error with the Oauth server %s\n", err)
-		}
+		o.server.ListenAndServe()
+		// if err != nil {
+		// 	log.Printf("Error with the Oauth server %s\n", err)
+		// }
 	}()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	browser.OpenURL(url)
 	code := <-o.codeChan
-	o.Shutdown()
+	o.server.Shutdown(context.Background())
 	return code
 }
