@@ -14,7 +14,7 @@ conf := &oauth2.Config{
     },
 }
 
-client := oauth2Client.NewClient(conf)
+client := oauth2client.NewClient(conf)
 code := client.RetrieveCode()
 
 tok, err := conf.Exchange(oauth2.NoContext, code)
