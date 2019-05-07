@@ -2,6 +2,7 @@ package oauth2client
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/pkg/browser"
@@ -35,7 +36,7 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 	client.Conf.RedirectURL = client.addr
 
 	client.server = http.Server{}
-	client.server.Addr = client.addr
+	client.server.Addr = "0.0.0.0:3000"
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", client.handleCode)
 	client.server.Handler = mux
@@ -45,7 +46,12 @@ func NewClient(conf *oauth2.Config) *Oauth2Client {
 
 func (o *Oauth2Client) RetrieveCode() string {
 
-	go o.server.ListenAndServe()
+	go func() {
+		err := o.server.ListenAndServe()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	browser.OpenURL(url)
 	code := <-o.codeChan
