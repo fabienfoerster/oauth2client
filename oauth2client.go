@@ -49,7 +49,7 @@ func (o *Oauth2Client) RetrieveCode() string {
 	go func() {
 		err := o.server.ListenAndServe()
 		if err != nil {
-			log.Fatalf("Error with the Oauth server %s\n", err)
+			log.Printf("Error with the Oauth server %s\n", err)
 		}
 	}()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
