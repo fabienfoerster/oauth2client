@@ -55,5 +55,6 @@ func (o *Oauth2Client) RetrieveCode() string {
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	browser.OpenURL(url)
 	code := <-o.codeChan
+	o.Shutdown()
 	return code
 }
