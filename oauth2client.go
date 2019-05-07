@@ -1,7 +1,7 @@
 package oauth2client
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 
 	"github.com/pkg/browser"
@@ -12,7 +12,7 @@ import (
 type Oauth2Client struct {
 	codeChan chan string // channel use to retrieve the code from the dummy server
 	Conf     *oauth2.Config
-	port     int
+	addr     string
 }
 
 func (o *Oauth2Client) handleCode(w http.ResponseWriter, r *http.Request) {
@@ -21,27 +21,26 @@ func (o *Oauth2Client) handleCode(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(code))
 }
 
-func (o *Oauth2Client) setPort(port int) {
-	o.port = port
-	o.Conf.RedirectURL = fmt.Sprintf("http://localhost:%d", port)
-}
-
 func NewClient(conf *oauth2.Config) *Oauth2Client {
 	client := &Oauth2Client{
 		codeChan: make(chan string),
 		Conf:     conf,
-		port:     3000,
+		addr:     "0.0.0.0:3000",
 	}
-	client.Conf.RedirectURL = fmt.Sprintf("http://localhost:%d", client.port)
+	client.Conf.RedirectURL = addr
 	return client
 }
 
 func (o *Oauth2Client) RetrieveCode() string {
-	http.HandleFunc("/", o.handleCode)
-	port := fmt.Sprintf(":%d", o.port)
-	go http.ListenAndServe(port, nil)
+	httpServer := http.Server{}
+	httpServer.Addr = o.addr
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", o/handleCode)
+	httpServer.Handler = mux
+	go httpServer.ListenAndServe()
 	url := o.Conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	browser.OpenURL(url)
 	code := <-o.codeChan
+	httpServer.Shutdown(context.Background())
 	return code
 }
